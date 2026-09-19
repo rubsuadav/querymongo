@@ -1,0 +1,28 @@
+{
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "tests", "coverage", "node_modules"],
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "module": "nodenext",
+    "target": "es6",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true /* Allows imports ending in .ts for direct TypeScript execution in tests */,
+    "rewriteRelativeImportExtensions": true /* Rewrites relative .ts imports to .js when emitting build artifacts */,
+    "types": ["node"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": false,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "declarationDir": "./dist/types"
+  }
+}
