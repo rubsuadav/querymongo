@@ -1,0 +1,37 @@
+/**
+ * Conversor para queries SELECT
+ * Convierte SELECT SQL a aggregation pipeline o find query de MongoDB
+ */
+import type { IConverter } from "../../domain/interfaces/Converter.ts";
+import {
+  buildProjection,
+  buildFilter,
+  removeUndefinedFields,
+} from "../utils/queryUtils.ts";
+
+export const SelectConverter: IConverter = {
+  can: (statement: string): boolean => {
+    return statement.toLowerCase().startsWith("select");
+  },
+
+  convert: (query: any): Record<string, any> => {
+    const { ast } = query;
+    const { columns, from, where, limit } = ast;
+
+    const fields =
+      columns && columns[0]?.expr?.column !== "*"
+        ? columns.map((col: any) => col.expr.column)
+        : "*";
+
+    const limitValue = limit?.value?.[0]?.value || limit?.value || limit;
+
+    return removeUndefinedFields({
+      collection: from?.[0]?.table || "collection",
+      pipeline: [
+        where && { $match: buildFilter(where) },
+        fields !== "*" && { $project: buildProjection(fields) },
+        limitValue && { $limit: limitValue },
+      ].filter(Boolean),
+    });
+  },
+};
