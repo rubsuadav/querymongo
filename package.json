@@ -3,11 +3,10 @@
   "type": "module",
   "version": "1.0.1",
   "description": "SQL to MongoDB Query Converter CLI",
-  "main": "dist/index.js",
-  "bin": {
-    "querymongo": "dist/cli/main.js"
-  },
+  "main": "dist/cli/main.js",
+  "bin": "dist/cli/main.js",
   "scripts": {
+    "prepare": "npm run build",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc",
     "start": "npm run build && node dist/cli/main.js",
@@ -20,10 +19,6 @@
     "mongodb",
     "converter",
     "query"
-  ],
-  "files": [
-    "src",
-    "package.json"
   ],
   "repository": {
     "url": "https://github.com/rubsuadav/querymongo",
