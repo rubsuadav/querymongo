@@ -1,7 +1,7 @@
 {
   "name": "querymongo",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SQL to MongoDB Query Converter CLI",
   "main": "dist/index.js",
   "bin": {
