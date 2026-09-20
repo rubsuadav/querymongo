@@ -21,9 +21,38 @@ export const UpdateConverter: IConverter = {
 
     return removeUndefinedFields({
       collection: collectionName,
-      operation: "updateOne",
+      operation: determineOperation(where),
       filter: where ? buildFilter(where) : {},
       update: { $set: updateData },
     });
   },
 };
+
+function determineOperation(where: any): "updateOne" | "updateMany" {
+  if (!where) return "updateMany";
+
+  const uniqueFields = ["id", "_id", "email", "username"];
+
+  const { operator, left } = where;
+
+  if (operator?.toLowerCase() === "and" || operator?.toLowerCase() === "or") {
+    return "updateMany";
+  }
+
+  const field = left?.column || left?.value || left || "";
+  const isUniqueField = uniqueFields.includes(field?.toLowerCase?.());
+
+  if (isUniqueField && operator === "=") {
+    return "updateOne";
+  }
+
+  if (
+    [">", "<", ">=", "<=", "!=", "<>", "like", "in"].includes(
+      operator?.toLowerCase(),
+    )
+  ) {
+    return "updateMany";
+  }
+
+  return "updateOne";
+}

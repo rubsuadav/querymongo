@@ -18,8 +18,37 @@ export const DeleteConverter: IConverter = {
 
     return removeUndefinedFields({
       collection: collectionName,
-      operation: "deleteOne",
+      operation: determineOperation(where),
       filter: where ? buildFilter(where) : {},
     });
   },
 };
+
+function determineOperation(where: any): "deleteOne" | "deleteMany" {
+  if (!where) return "deleteMany";
+
+  const uniqueFields = ["id", "_id", "email", "username"];
+
+  const { operator, left } = where;
+
+  if (operator?.toLowerCase() === "and" || operator?.toLowerCase() === "or") {
+    return "deleteMany";
+  }
+
+  const field = left?.column || left?.value || left || "";
+  const isUniqueField = uniqueFields.includes(field?.toLowerCase?.());
+
+  if (isUniqueField && operator === "=") {
+    return "deleteOne";
+  }
+
+  if (
+    [">", "<", ">=", "<=", "!=", "<>", "like", "in"].includes(
+      operator?.toLowerCase(),
+    )
+  ) {
+    return "deleteMany";
+  }
+
+  return "deleteOne";
+}

@@ -32,6 +32,18 @@ export const buildFilter = (condition: any): Record<string, any> => {
 
   if (!operator) return {};
 
+  if (operator.toUpperCase() === "AND") {
+    return {
+      $and: [buildFilter(left), buildFilter(right)],
+    };
+  }
+
+  if (operator.toUpperCase() === "OR") {
+    return {
+      $or: [buildFilter(left), buildFilter(right)],
+    };
+  }
+
   const field = normalizeFieldName(left?.column || left?.value || left || "");
   const value = right?.value !== undefined ? right.value : right;
 
