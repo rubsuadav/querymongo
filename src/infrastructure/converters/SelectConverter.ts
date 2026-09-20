@@ -27,8 +27,9 @@ export const SelectConverter: IConverter = {
 
     return removeUndefinedFields({
       collection: from?.[0]?.table || "collection",
+      queryType: where && fields !== "*" && limitValue ? "aggregation" : "find",
       pipeline: [
-        where && { $match: buildFilter(where) },
+        { $match: buildFilter(where) || {} },
         fields !== "*" && { $project: buildProjection(fields) },
         limitValue && { $limit: limitValue },
       ].filter(Boolean),

@@ -8,7 +8,7 @@ import {
 } from "../infrastructure/parser/sqlParser.ts";
 import { getConverter } from "../infrastructure/converters/ConverterFactory.ts";
 
-export class MongoConverter {
+class MongoConverter {
   convert(sql: string): Record<string, any> {
     const normalized = normalizeQuery(sql);
     const parsed = parseSqlQuery(normalized);
