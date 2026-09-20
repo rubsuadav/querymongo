@@ -170,7 +170,6 @@ Cobertura: **100%** en líneas y funciones.
 
 ## 🎯 Próximas Mejoras
 
-- [ ] Soporte para JOIN
 - [ ] Soporte para GROUP BY
 - [ ] Soporte para ORDER BY
 - [ ] Transacciones multi-documento
