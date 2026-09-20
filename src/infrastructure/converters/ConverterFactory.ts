@@ -8,8 +8,10 @@ import { SelectConverter } from "./SelectConverter.ts";
 import { CreateConverter } from "./CreateConverter.ts";
 import { UpdateConverter } from "./UpdateConverter.ts";
 import { DeleteConverter } from "./DeleteConverter.ts";
+import { JoinConverter } from "./JoinConverter.ts";
 
 const CONVERTERS: IConverter[] = [
+  JoinConverter,
   SelectConverter,
   CreateConverter,
   UpdateConverter,
