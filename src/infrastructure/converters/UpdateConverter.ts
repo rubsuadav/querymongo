@@ -3,7 +3,11 @@
  * Convierte UPDATE SQL a updateOne/updateMany de MongoDB
  */
 import type { IConverter } from "../../domain/interfaces/Converter.ts";
-import { buildFilter, removeUndefinedFields } from "../utils/queryUtils.ts";
+import {
+  buildFilter,
+  determineOperation,
+  removeUndefinedFields,
+} from "../utils/queryUtils.ts";
 
 export const UpdateConverter: IConverter = {
   can: (statement: string): boolean => {
@@ -21,38 +25,12 @@ export const UpdateConverter: IConverter = {
 
     return removeUndefinedFields({
       collection: collectionName,
-      operation: determineOperation(where),
+      operation: determineOperation(where, {
+        one: "updateOne",
+        many: "updateMany",
+      }),
       filter: where ? buildFilter(where) : {},
       update: { $set: updateData },
     });
   },
 };
-
-function determineOperation(where: any): "updateOne" | "updateMany" {
-  if (!where) return "updateMany";
-
-  const uniqueFields = ["id", "_id", "email", "username"];
-
-  const { operator, left } = where;
-
-  if (operator?.toLowerCase() === "and" || operator?.toLowerCase() === "or") {
-    return "updateMany";
-  }
-
-  const field = left?.column || left?.value || left || "";
-  const isUniqueField = uniqueFields.includes(field?.toLowerCase?.());
-
-  if (isUniqueField && operator === "=") {
-    return "updateOne";
-  }
-
-  if (
-    [">", "<", ">=", "<=", "!=", "<>", "like", "in"].includes(
-      operator?.toLowerCase(),
-    )
-  ) {
-    return "updateMany";
-  }
-
-  return "updateOne";
-}

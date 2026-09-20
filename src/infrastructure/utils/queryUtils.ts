@@ -64,3 +64,30 @@ export const buildFilter = (condition: any): Record<string, any> => {
 
   return mongoOp ? { [field]: { [mongoOp]: value } } : {};
 };
+
+export function determineOperation(
+  where: any,
+  operations: { one: string; many: string },
+): string {
+  const uniqueFields = ["id", "_id", "email", "username"];
+  const { operator, left } = where;
+
+  if (!where) return operations.many;
+
+  if (["and", "or"].includes(operator?.toLowerCase())) {
+    return operations.many;
+  }
+
+  const field = left?.column || left?.value || left || "";
+  const isUniqueField = uniqueFields.includes(field?.toLowerCase?.());
+
+  if (isUniqueField && operator === "=") {
+    return operations.one;
+  }
+
+  return [">", "<", ">=", "<=", "!=", "<>", "like", "in"].includes(
+    operator?.toLowerCase(),
+  )
+    ? operations.many
+    : operations.one;
+}
