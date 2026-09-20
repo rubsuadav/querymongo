@@ -18,11 +18,31 @@ const normalizeFieldNames = (fields: string[]): string[] => {
   return fields.map(normalizeFieldName);
 };
 
+const normalizeQualifiedField = (field: string): string => {
+  const parts = field.split(".");
+  return parts.length > 1 ? (parts[parts.length - 1] as string) : field;
+};
+
+export const extractSelectColumns = (columns: any[]): string[] => {
+  if (!columns) return ["*"];
+
+  return columns.map((col: any) => {
+    if (typeof col === "object" && col.expr) {
+      return col.expr.column || col.expr.value || "*";
+    }
+    return col;
+  });
+};
+
 export const buildProjection = (
   fields: string[] | "*",
 ): Record<string, 1 | 0> => {
   if (fields === "*") return {};
-  return Object.fromEntries(normalizeFieldNames(fields).map((f) => [f, 1]));
+  return Object.fromEntries(
+    normalizeFieldNames(fields)
+      .map(normalizeQualifiedField) // Soporte para alias de tabla en campos cualificados
+      .map((f) => [f, 1]),
+  );
 };
 
 export const buildFilter = (condition: any): Record<string, any> => {

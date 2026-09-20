@@ -7,6 +7,7 @@ import {
   buildProjection,
   buildFilter,
   removeUndefinedFields,
+  extractSelectColumns,
 } from "../utils/queryUtils.ts";
 
 export const SelectConverter: IConverter = {
@@ -18,10 +19,7 @@ export const SelectConverter: IConverter = {
     const { ast } = query;
     const { columns, from, where, limit } = ast;
 
-    const fields =
-      columns && columns[0]?.expr?.column !== "*"
-        ? columns.map((col: any) => col.expr.column)
-        : "*";
+    const fields = columns ? extractSelectColumns(columns) : "*";
 
     const limitValue = limit?.value?.[0]?.value || limit?.value || limit;
 
