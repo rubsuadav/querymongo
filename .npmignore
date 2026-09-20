@@ -1,3 +1,7 @@
 src
 tsconfig.json
 .releaserc.json
+ARCHITECTURE.md
+.github
+.vscode
+examples.ts
