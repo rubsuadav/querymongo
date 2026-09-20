@@ -5,8 +5,8 @@
 import _ from "lodash";
 
 export const removeUndefinedFields = (
-  obj: Record<string, any>,
-): Record<string, any> => {
+  obj: _.Dictionary<any>,
+): _.Dictionary<any> => {
   return _.omitBy(obj, _.isUndefined);
 };
 
