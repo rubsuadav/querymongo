@@ -10,7 +10,7 @@ export const removeUndefinedFields = (
   return _.omitBy(obj, _.isUndefined);
 };
 
-export const normalizeFieldName = (field: string): string => {
+const normalizeFieldName = (field: string): string => {
   return field.trim().replace(/`|"/g, "");
 };
 

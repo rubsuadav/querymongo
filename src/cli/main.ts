@@ -12,13 +12,6 @@ const program = new Command();
 
 program
   .name("querymongo")
-  .description("Convert SQL queries to MongoDB format")
-  .version("1.0.0")
-  .usage("[command]");
-
-program
-  .command("interactive")
-  .description("Start interactive mode")
   .action(async () => {
     const readline = await import("readline");
     const rl = readline.createInterface({
@@ -58,7 +51,6 @@ program
         );
       }
     }
-  })
-  .usage(" ");
+  });
 
 program.parse(process.argv);
