@@ -157,6 +157,8 @@ Cobertura: **100%** en líneas y funciones.
 | `LIKE`      | `$regex` |
 | `IN`        | `$in`    |
 | `NOT IN`    | `$nin`   |
+| `AND`       | `$and`   |
+| `OR`        | `$or`    |
 
 ## 📦 Dependencias
 
