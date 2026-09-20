@@ -21,6 +21,10 @@
     "converter",
     "query"
   ],
+  "files": [
+    "dist",
+    "package.json"
+  ],
   "repository": {
     "url": "https://github.com/rubsuadav/querymongo",
     "type": "git"
