@@ -14,7 +14,7 @@ export const normalizeFieldName = (field: string): string => {
   return field.trim().replace(/`|"/g, "");
 };
 
-export const normalizeFieldNames = (fields: string[]): string[] => {
+const normalizeFieldNames = (fields: string[]): string[] => {
   return fields.map(normalizeFieldName);
 };
 
