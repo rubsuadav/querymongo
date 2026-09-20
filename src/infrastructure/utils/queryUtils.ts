@@ -108,9 +108,5 @@ export function determineOperation(
     return operations.one;
   }
 
-  return [">", "<", ">=", "<=", "!=", "<>", "like", "in"].includes(
-    operator?.toLowerCase(),
-  )
-    ? operations.many
-    : operations.one;
+  return operations.many;
 }
