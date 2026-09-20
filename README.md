@@ -45,31 +45,34 @@ src/
 - **Dependency Inversion**: Se depende de la interface `IConverter`, no de implementaciones
 - **Single Responsibility**: Cada conversor tiene un propósito único
 
-## 🚀 Instalación
-
-```bash
-npm install
-npm run build
-```
-
 ## 💻 Uso
 
-### Modo CLI - Interactivo
+### 🚀 Instalación Global - CLI
+
+Para instalar QueryMongo globalmente en tu máquina:
 
 ```bash
-npm run dev -- interactive
+npm i querymongo -g
 ```
 
-Ingresa queries SQL y recibe instantáneamente el equivalente en MongoDB.
+Luego ejecuta desde cualquier directorio:
 
-### Usar como librería
-
-```typescript
-import { mongoConverter } from "./src/application/MongoConverter.ts";
-
-const result = mongoConverter.convert("SELECT name FROM users WHERE age > 18");
-console.log(result);
+```bash
+querymongo
 ```
+
+### 🛠️ Desarrollo Local
+
+Para trabajar en el desarrollo del proyecto:
+
+```bash
+git clone https://github.com/rubsuadav/querymongo
+cd querymongo
+npm install
+npm run dev interactive
+```
+
+Esto abrirá la CLI interactiva donde puedes ingresar queries SQL y recibir instantáneamente el equivalente en MongoDB.
 
 ## 📚 Ejemplos de Conversión
 
