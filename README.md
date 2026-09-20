@@ -144,36 +144,6 @@ npm test
 
 Cobertura: **100%** en líneas y funciones.
 
-## 📖 API Reference
-
-### `MongoConverter`
-
-Clase principal para conversiones.
-
-```typescript
-class MongoConverter {
-  convert(sql: string): Record<string, any>;
-}
-```
-
-**Parámetros:**
-
-- `sql` (string): Query SQL a convertir
-
-**Retorna:** Objeto con estructura MongoDB
-
-**Lanza:** Error si el query SQL no es soportado
-
-### Exports Públicos
-
-```typescript
-export {
-  MongoConverter,
-  mongoConverter,
-} from "./src/application/MongoConverter.ts";
-export type { IConverter } from "./src/domain/interfaces/Converter.ts";
-```
-
 ## 🔧 Operadores Soportados
 
 | SQL         | MongoDB  |
