@@ -22,7 +22,7 @@
     "query"
   ],
   "files": [
-    "dist",
+    "src",
     "package.json"
   ],
   "repository": {
