@@ -37,6 +37,8 @@ export const extractSelectColumns = (columns: any[]): string[] => {
 export const buildProjection = (
   fields: string[] | "*",
 ): Record<string, 1 | 0> => {
+  if (Array.isArray(fields) && fields.length === 1 && fields[0] === "*")
+    return {};
   if (fields === "*") return {};
   return Object.fromEntries(
     normalizeFieldNames(fields)
@@ -90,9 +92,10 @@ export function determineOperation(
   operations: { one: string; many: string },
 ): string {
   const uniqueFields = ["id", "_id", "email", "username"];
-  const { operator, left } = where;
 
   if (!where) return operations.many;
+
+  const { operator, left } = where;
 
   if (["and", "or"].includes(operator?.toLowerCase())) {
     return operations.many;
