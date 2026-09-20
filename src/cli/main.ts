@@ -13,31 +13,8 @@ const program = new Command();
 program
   .name("querymongo")
   .description("Convert SQL queries to MongoDB format")
-  .version("1.0.0");
-
-program
-  .command("convert <sql>")
-  .description("Convert a SQL query to MongoDB format")
-  .option("-f, --format <type>", "output format (json, pretty)", "pretty")
-  .action((sql: string, options: { format: string }) => {
-    try {
-      const result = mongoConverter.convert(sql);
-
-      if (options.format === "json") {
-        console.log(JSON.stringify(result));
-      } else {
-        console.log(chalk.green("✓ Conversion successful:\n"));
-        console.log(chalk.cyan(JSON.stringify(result, null, 2)));
-      }
-    } catch (error) {
-      console.error(
-        chalk.red(
-          `✗ Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-        ),
-      );
-      process.exit(1);
-    }
-  });
+  .version("1.0.0")
+  .usage("[command]");
 
 program
   .command("interactive")
@@ -81,10 +58,7 @@ program
         );
       }
     }
-  });
+  })
+  .usage(" ");
 
 program.parse(process.argv);
-
-if (process.argv.length === 2) {
-  program.outputHelp();
-}

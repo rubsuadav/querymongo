@@ -54,35 +54,6 @@ npm run build
 
 ## 💻 Uso
 
-### Modo CLI - Conversión simple
-
-```bash
-npm run dev -- convert "SELECT name, email FROM users WHERE id = 1"
-```
-
-**Salida:**
-
-```json
-{
-  "collection": "users",
-  "pipeline": [
-    {
-      "$match": {
-        "id": {
-          "$eq": 1
-        }
-      }
-    },
-    {
-      "$project": {
-        "name": 1,
-        "email": 1
-      }
-    }
-  ]
-}
-```
-
 ### Modo CLI - Interactivo
 
 ```bash
