@@ -2,14 +2,12 @@
  * Utilidades para conversión de queries SQL a MongoDB
  * Centraliza lógica reutilizable siguiendo principio DRY
  */
-import pkg from "lodash";
-
-const { omitBy, isUndefined } = pkg;
+import _ from "lodash";
 
 export const removeUndefinedFields = (
   obj: Record<string, any>,
 ): Record<string, any> => {
-  return omitBy(obj, isUndefined);
+  return _.omitBy(obj, _.isUndefined);
 };
 
 export const normalizeFieldName = (field: string): string => {
