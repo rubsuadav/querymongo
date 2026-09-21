@@ -23,6 +23,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "declarationDir": "./dist/types"
+    "declarationDir": "./dist"
   }
 }
