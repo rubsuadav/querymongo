@@ -3,8 +3,12 @@
   "type": "module",
   "version": "1.4.0",
   "description": "SQL to MongoDB Query Converter CLI",
-  "main": "dist/cli/main.js",
+  "main": "dist/index.js",
   "bin": "dist/cli/main.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./cli": "./dist/cli/main.js"
+  },
   "scripts": {
     "prepare": "npm run build",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
