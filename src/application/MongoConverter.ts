@@ -10,19 +10,32 @@ import { getConverter } from "../infrastructure/converters/ConverterFactory.ts";
 
 class MongoConverter {
   convert(sql: string): Record<string, any> {
-    const normalized = normalizeQuery(sql);
-    const parsed = parseSqlQuery(normalized);
+    try {
+      if (!sql || typeof sql !== "string")
+        throw new Error("SQL query must be a non-empty string");
 
-    const statement = Array.isArray(parsed) ? parsed[0] : parsed;
-    const converter = getConverter(normalized);
+      const normalized = normalizeQuery(sql);
+      const parsed = parseSqlQuery(normalized);
 
-    if (!converter) {
-      throw new Error(
-        `Unsupported SQL statement: ${normalized.substring(0, 50)}...`,
-      );
+      const statement = Array.isArray(parsed) ? parsed[0] : parsed;
+
+      if (!statement)
+        throw new Error(
+          "Could not parse SQL statement. Check your query syntax.",
+        );
+
+      const converter = getConverter(normalized);
+
+      if (!converter) {
+        throw new Error(
+          `Unsupported SQL statement: ${normalized.substring(0, 50)}...`,
+        );
+      }
+
+      return converter.convert(statement);
+    } catch (error: any) {
+      throw new Error(error instanceof Error ? error.message : String(error));
     }
-
-    return converter.convert(statement);
   }
 }
 
