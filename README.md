@@ -8,8 +8,9 @@ SQL to MongoDB Query Converter CLI - Convierte queries SQL a MongoDB format de f
 ✅ **Convertir INSERT queries** - Para inserción de documentos únicos o múltiples  
 ✅ **Convertir UPDATE queries** - Con filtros y actualizaciones en uno o muchos documentos  
 ✅ **Convertir DELETE queries** - Para eliminación con condiciones complejas  
-✅ **CLI interactiva** - Modo interactivo para pruebas rápidas  
 ✅ **Convertir JOIN queries** - INNER JOIN y LEFT JOIN entre colecciones  
+✅ **Soporte para ORDER BY y sorting** - Permite ordenar resultados según múltiples campos y direcciones, aplica tanto en queries SELECT como en JOIN  
+✅ **CLI interactiva** - Modo interactivo para pruebas rápidas  
 ✅ **API TypeScript** - Para uso como librería en tus proyectos
 
 ## 🏗️ Arquitectura
@@ -768,7 +769,6 @@ Cobertura: **100%** en líneas y funciones.
 ## 🎯 Próximas Mejoras
 
 - [ ] Soporte para GROUP BY y agregaciones
-- [ ] Soporte para ORDER BY y sorting
 - [ ] Transacciones multi-documento
 - [ ] Validación de esquema
 - [ ] Soporte para DISTINCT

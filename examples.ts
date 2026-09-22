@@ -170,6 +170,50 @@ const examples: Example[] = [
     sql: "SELECT u.name, o.order_id, p.product_name FROM users u INNER JOIN orders o ON u.id = o.user_id INNER JOIN products p ON o.product_id = p.id",
     description: "Múltiples joins encadenados",
   },
+
+  // ================== ORDER BY QUERIES ==================
+  {
+    title: "⬆️ SELECT con ORDER BY - ASC (Ascendente)",
+    sql: "SELECT * FROM users ORDER BY name ASC",
+    description: "Ordena documentos alfabéticamente por nombre (A-Z)",
+  },
+  {
+    title: "⬇️ SELECT con ORDER BY - DESC (Descendente)",
+    sql: "SELECT * FROM users ORDER BY age DESC",
+    description: "Ordena documentos por edad de mayor a menor",
+  },
+  {
+    title: "⬆️⬇️ SELECT con ORDER BY - Múltiples campos",
+    sql: "SELECT * FROM users ORDER BY status ASC, name DESC",
+    description:
+      "Ordena primero por status, luego por nombre dentro de cada status",
+  },
+  {
+    title: "🔍⬇️ SELECT con WHERE y ORDER BY",
+    sql: "SELECT name, salary FROM employees WHERE department = 'sales' ORDER BY salary DESC",
+    description: "Filtra empleados de ventas y ordena por salario descendente",
+  },
+  {
+    title: "📊⬇️ SELECT con ORDER BY y LIMIT",
+    sql: "SELECT * FROM products ORDER BY price DESC LIMIT 10",
+    description: "Top 10 productos más caros",
+  },
+  {
+    title: "📊⬆️ SELECT con ORDER BY y LIMIT - Menor valor",
+    sql: "SELECT * FROM products ORDER BY price ASC LIMIT 5",
+    description: "Los 5 productos más baratos",
+  },
+  {
+    title: "🔗⬇️ JOIN con ORDER BY",
+    sql: "SELECT u.name, o.total, o.order_date FROM users u INNER JOIN orders o ON u.id = o.user_id ORDER BY o.order_date DESC",
+    description: "Orders ordenadas por fecha más reciente primero",
+  },
+  {
+    title: "🔍⬆️⬇️ SELECT con WHERE, ORDER BY múltiple y LIMIT",
+    sql: "SELECT name, age, score FROM students WHERE age >= 18 ORDER BY score DESC, name ASC LIMIT 20",
+    description:
+      "Filtra mayores de edad, ordena por mejor score luego alfabéticamente, top 20",
+  },
 ];
 
 console.log(chalk.bold.blue("\n🚀 QueryMongo - Ejemplos de Uso\n"));

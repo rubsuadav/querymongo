@@ -87,6 +87,23 @@ export const buildFilter = (condition: any): Record<string, any> => {
   return mongoOp ? { [field]: { [mongoOp]: value } } : {};
 };
 
+export const buildSort = (orderBy: any): Record<string, 1 | -1> | null => {
+  if (!orderBy || !Array.isArray(orderBy) || orderBy.length === 0) return null;
+
+  return Object.fromEntries(
+    orderBy.map((item: any) => {
+      // Extraer el nombre del campo
+      const field = item.expr?.column || item.expr?.value || item.expr || "";
+      const normalizedField = normalizeFieldName(field);
+      const qualifiedField = normalizeQualifiedField(normalizedField);
+
+      // Determinar dirección: 1 para ASC, -1 para DESC
+      const direction = item.type?.toUpperCase() === "DESC" ? -1 : 1;
+      return [qualifiedField, direction];
+    }),
+  );
+};
+
 export function determineOperation(
   where: any,
   operations: { one: string; many: string },

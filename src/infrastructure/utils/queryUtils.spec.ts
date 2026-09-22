@@ -3,13 +3,14 @@
  * Verifica las funciones auxiliares para construir filtros, proyecciones y operaciones
  */
 import { test, describe } from "node:test";
-import { equal, ok, deepEqual } from "node:assert";
+import { equal, ok, deepEqual, deepStrictEqual } from "node:assert";
 import {
   buildFilter,
   buildProjection,
   removeUndefinedFields,
   extractSelectColumns,
   determineOperation,
+  buildSort,
 } from "../utils/queryUtils.ts";
 
 describe("Query Utilities - buildFilter", () => {
@@ -307,5 +308,22 @@ describe("Query Utilities - removeUndefinedFields", () => {
     const result = removeUndefinedFields(obj);
 
     deepEqual(result, {});
+  });
+});
+
+describe("Query Utilities - buildSort", () => {
+  test("should return null for empty or invalid input", () => {
+    equal(buildSort(null), null);
+    equal(buildSort(undefined), null);
+    equal(buildSort([]), null);
+  });
+
+  test("should build sort object correctly", () => {
+    const orderBy = [
+      { expr: { column: "name" }, type: "ASC" },
+      { expr: { column: "age" }, type: "DESC" },
+    ];
+    const result = buildSort(orderBy);
+    deepStrictEqual(result, { name: 1, age: -1 });
   });
 });

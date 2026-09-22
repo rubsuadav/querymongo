@@ -8,6 +8,7 @@ import {
   buildFilter,
   removeUndefinedFields,
   extractSelectColumns,
+  buildSort,
 } from "../utils/queryUtils.ts";
 
 export const JoinConverter: IConverter = {
@@ -20,13 +21,14 @@ export const JoinConverter: IConverter = {
 
   convert: (query: any): Record<string, any> => {
     const { ast } = query;
-    const { from, columns, where, limit } = ast;
+    const { from, columns, where, limit, orderby } = ast;
 
     const mainTable = from[0].table;
     const pipeline: any[] = [];
 
     const columnNames = columns ? extractSelectColumns(columns) : ["*"];
     const limitValue = limit?.value?.[0]?.value || limit?.value || limit;
+    const sortSpec = buildSort(orderby);
 
     from.slice(1).forEach((join: any, index: number) => {
       if (join.join) {
@@ -55,6 +57,7 @@ export const JoinConverter: IConverter = {
 
     if (where) pipeline.push({ $match: buildFilter(where) });
     pipeline.push({ $project: buildProjection(columnNames) });
+    if (sortSpec) pipeline.push({ $sort: sortSpec });
     if (limitValue) pipeline.push({ $limit: limitValue });
 
     return removeUndefinedFields({
