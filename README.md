@@ -751,12 +751,14 @@ Cobertura: **100%** en líneas y funciones.
 | `>`         | `$gt`     | Mayor que               |
 | `<=`        | `$lte`    | Menor o igual           |
 | `>=`        | `$gte`    | Mayor o igual           |
+| `WHERE`     | `$match`  | Condición de filtrado   |
 | `LIKE`      | `$regex`  | Búsqueda por patrón     |
 | `IN`        | `$in`     | Dentro de lista         |
 | `NOT IN`    | `$nin`    | Fuera de lista          |
 | `AND`       | `$and`    | Operador lógico Y       |
 | `OR`        | `$or`     | Operador lógico O       |
 | `JOIN`      | `$lookup` | Unión entre colecciones |
+| `ORDER BY`  | `$sort`   | Ordenamiento de resultados  |
 
 ## 📦 Dependencias
 
@@ -768,11 +770,10 @@ Cobertura: **100%** en líneas y funciones.
 
 ## 🎯 Próximas Mejoras
 
-- [ ] Soporte para GROUP BY y agregaciones
-- [ ] Transacciones multi-documento
-- [ ] Validación de esquema
-- [ ] Soporte para DISTINCT
-- [ ] Operadores de texto ($text)
+- [ ] Soporte para GROUP BY y agregaciones + HAVING
+- [ ] BETWEEN operator en WHERE
+- [ ] OFFSET clause (pagination)
+- [ ] Subqueries en WHERE
 
 ## 📄 Licencia
 
