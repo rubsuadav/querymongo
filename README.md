@@ -743,22 +743,23 @@ Cobertura: **100%** en líneas y funciones.
 
 ## 🔧 Operadores Soportados
 
-| SQL         | MongoDB   | Descripción             |
-| ----------- | --------- | ----------------------- |
-| `=`         | `$eq`     | Igualdad                |
-| `!=` o `<>` | `$ne`     | No igual                |
-| `<`         | `$lt`     | Menor que               |
-| `>`         | `$gt`     | Mayor que               |
-| `<=`        | `$lte`    | Menor o igual           |
-| `>=`        | `$gte`    | Mayor o igual           |
-| `WHERE`     | `$match`  | Condición de filtrado   |
-| `LIKE`      | `$regex`  | Búsqueda por patrón     |
-| `IN`        | `$in`     | Dentro de lista         |
-| `NOT IN`    | `$nin`    | Fuera de lista          |
-| `AND`       | `$and`    | Operador lógico Y       |
-| `OR`        | `$or`     | Operador lógico O       |
-| `JOIN`      | `$lookup` | Unión entre colecciones |
-| `ORDER BY`  | `$sort`   | Ordenamiento de resultados  |
+| SQL         | MongoDB         | Descripción                |
+| ----------- | --------------- | -------------------------- |
+| `=`         | `$eq`           | Igualdad                   |
+| `!=` o `<>` | `$ne`           | No igual                   |
+| `<`         | `$lt`           | Menor que                  |
+| `>`         | `$gt`           | Mayor que                  |
+| `<=`        | `$lte`          | Menor o igual              |
+| `>=`        | `$gte`          | Mayor o igual              |
+| `WHERE`     | `$match`        | Condición de filtrado      |
+| `LIKE`      | `$regex`        | Búsqueda por patrón        |
+| `IN`        | `$in`           | Dentro de lista            |
+| `NOT IN`    | `$nin`          | Fuera de lista             |
+| `AND`       | `$and`          | Operador lógico Y          |
+| `OR`        | `$or`           | Operador lógico O          |
+| `JOIN`      | `$lookup`       | Unión entre colecciones    |
+| `ORDER BY`  | `$sort`         | Ordenamiento de resultados |
+| `BETWEEN`   | `$gte` y `$lte` | Rango de valores           |
 
 ## 📦 Dependencias
 
@@ -771,7 +772,6 @@ Cobertura: **100%** en líneas y funciones.
 ## 🎯 Próximas Mejoras
 
 - [ ] Soporte para GROUP BY y agregaciones + HAVING
-- [ ] BETWEEN operator en WHERE
 - [ ] OFFSET clause (pagination)
 - [ ] Subqueries en WHERE
 

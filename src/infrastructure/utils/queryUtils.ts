@@ -54,6 +54,15 @@ export const buildFilter = (condition: any): Record<string, any> => {
 
   if (!operator) return {};
 
+  if (operator.toUpperCase() === "BETWEEN") {
+    const field = normalizeFieldName(left?.column || left?.value || left || "");
+    const minValue = right?.value.length > 0 ? right.value[0] : undefined;
+    const maxValue = right?.value.length > 1 ? right.value[1] : undefined;
+    return {
+      $and: [{ [field]: { $gte: minValue } }, { [field]: { $lte: maxValue } }],
+    };
+  }
+
   if (operator.toUpperCase() === "AND") {
     return {
       $and: [buildFilter(left), buildFilter(right)],

@@ -46,6 +46,28 @@ describe("Query Utilities - buildFilter", () => {
     });
   });
 
+  test("should handle BETWEEN operator", () => {
+    const condition = {
+      operator: "BETWEEN",
+      left: { column: "age" },
+      right: { value: [18, 30] },
+    };
+    const filter = buildFilter(condition);
+
+    const { $and } = filter;
+    const gteCondition = $and.find((cond: Record<string, any>) => {
+      return cond.age?.$gte;
+    });
+    const lteCondition = $and.find((cond: Record<string, any>) => {
+      return cond.age?.$lte;
+    });
+
+    ok(gteCondition.age?.$gte === 18);
+    ok(lteCondition.age?.$lte === 30);
+    ok(gteCondition.age?.$gte !== 30);
+    ok(lteCondition.age?.$lte !== 18);
+  });
+
   test("should handle AND operator", () => {
     const condition = {
       operator: "AND",
