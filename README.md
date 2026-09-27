@@ -35,6 +35,7 @@ src/
 │   └── utils/
 │       └── queryUtils.ts        # Utilidades compartidas (DRY)
 ├── application/
+|   ├── MongooseConverter.ts     # Orquestador específico para Mongoose
 │   └── MongoConverter.ts        # Orquestador principal
 ├── cli/
 │   └── main.ts                  # Interfaz CLI
