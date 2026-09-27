@@ -5,6 +5,7 @@
  * Demuestra diferentes formas de usar la librería
  */
 import { mongoConverter } from "./src/application/MongoConverter.ts";
+import { mongooseConverter } from "./src/application/MongooseConverter.ts";
 import chalk from "chalk";
 
 interface Example {
@@ -237,6 +238,12 @@ examples.forEach((example, index) => {
       .map((line) => `   ${line}`)
       .join("\n");
     console.log(resultStr);
+    console.log(
+      chalk.gray("--------------------------------------------------"),
+    );
+    const mongooseQuery = mongooseConverter.convert(result);
+    console.log(chalk.green("\n   🛠 Mongoose Query:"));
+    console.log(chalk.white(`   ${mongooseQuery}`));
   } catch (error) {
     console.error(
       chalk.red(

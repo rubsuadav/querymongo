@@ -7,6 +7,7 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { mongoConverter } from "../application/MongoConverter.ts";
+import { mongooseConverter } from "../application/MongooseConverter.ts";
 
 const program = new Command();
 
@@ -39,8 +40,11 @@ program.name("querymongo").action(async () => {
 
     try {
       const result = mongoConverter.convert(sql);
+      const mongooseResult = mongooseConverter.convert(result);
       console.log(chalk.green("\n✓ MongoDB Query:\n"));
       console.log(chalk.cyan(JSON.stringify(result, null, 2)) + "\n");
+      console.log(chalk.blue("\n✓ Mongoose Query:\n"));
+      console.log(chalk.bold(mongooseResult) + "\n");
     } catch (error) {
       console.error(
         chalk.red(

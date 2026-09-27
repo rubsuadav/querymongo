@@ -72,7 +72,7 @@ Para trabajar en el desarrollo del proyecto:
 git clone https://github.com/rubsuadav/querymongo
 cd querymongo
 npm install
-npm run dev interactive
+npm run dev
 ```
 
 Esto abrirá la CLI interactiva donde puedes ingresar queries SQL y recibir instantáneamente el equivalente en MongoDB.
@@ -114,6 +114,12 @@ SELECT * FROM users
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.find({}, {});
+```
+
 #### SELECT con campos específicos
 
 ```sql
@@ -138,6 +144,12 @@ SELECT name, email FROM users
     }
   ]
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.find({}, { name: 1, email: 1 });
 ```
 
 ### SELECT - Filtros y Condiciones
@@ -169,6 +181,12 @@ SELECT * FROM users WHERE status = 'active'
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.find({ status: { $eq: "active" } }, {});
+```
+
 #### SELECT con comparación
 
 ```sql
@@ -194,6 +212,12 @@ SELECT * FROM products WHERE price > 100
     }
   ]
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await products.find({ price: { $gt: 100 } }, {});
 ```
 
 #### SELECT con múltiples condiciones (AND)
@@ -232,6 +256,15 @@ SELECT * FROM users WHERE age >= 18 AND status = 'active'
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.find(
+  { $and: [{ age: { $gte: 18 } }, { status: { $eq: "active" } }] },
+  {},
+);
+```
+
 #### SELECT con múltiples condiciones (OR)
 
 ```sql
@@ -268,6 +301,15 @@ SELECT * FROM users WHERE status = 'active' OR status = 'pending'
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.find(
+  { $or: [{ status: { $eq: "active" } }, { status: { $eq: "pending" } }] },
+  {},
+);
+```
+
 #### SELECT con LIKE (búsqueda por patrón)
 
 ```sql
@@ -293,6 +335,12 @@ SELECT * FROM users WHERE email LIKE '%@gmail.com'
     }
   ]
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.find({ email: { $regex: "%@gmail.com" } }, {});
 ```
 
 #### SELECT con IN
@@ -335,6 +383,15 @@ SELECT * FROM products WHERE category IN ('electronics', 'books', 'clothing')
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await products.find(
+  { category: { $in: ["electronics", "books", "clothing"] } },
+  {},
+);
+```
+
 ### SELECT - Proyecciones y Límites
 
 #### SELECT con LIMIT
@@ -361,6 +418,12 @@ SELECT * FROM users LIMIT 5
     }
   ]
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.find({}, {}).limit(5);
 ```
 
 #### SELECT con campos, filtro y límite
@@ -396,6 +459,12 @@ SELECT name, age FROM users WHERE age >= 18 LIMIT 10
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.find({ age: { $gte: 18 } }, { name: 1, age: 1 }).limit(10);
+```
+
 ---
 
 ### INSERT - Inserción de Documentos
@@ -418,6 +487,12 @@ INSERT INTO users (name, email, age) VALUES ('John Doe', 'john@example.com', 30)
     "age": 30
   }
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.insertOne({ name: "John Doe", email: "john@example.com", age: 30 });
 ```
 
 #### INSERT múltiple en una sola operación
@@ -443,6 +518,16 @@ INSERT INTO users (name, email) VALUES
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.insertMany([
+  { name: "Alice", email: "alice@example.com" },
+  { name: "Bob", email: "bob@example.com" },
+  { name: "Charlie", email: "charlie@example.com" },
+]);
+```
+
 #### INSERT con valores numéricos y tipos diversos
 
 ```sql
@@ -463,6 +548,17 @@ VALUES ('Laptop', 999.99, 5, 4.5)
     "rating": 4.5
   }
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await products.insertOne({
+  name: "Laptop",
+  price: 999.99,
+  quantity: 5,
+  rating: 4.5,
+});
 ```
 
 ---
@@ -494,6 +590,12 @@ UPDATE users SET status = 'inactive' WHERE id = 1
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.updateOne({ id: { $eq: 1 } }, { $set: { status: "inactive" } });
+```
+
 #### UPDATE múltiples campos
 
 ```sql
@@ -520,6 +622,15 @@ UPDATE users SET status = 'active', last_login = '2026-09-21' WHERE email = 'joh
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.updateOne(
+  { email: { $eq: "john@example.com" } },
+  { $set: { status: "active", last_login: "2026-09-21" } },
+);
+```
+
 #### UPDATE múltiples documentos (updateMany)
 
 ```sql
@@ -537,6 +648,12 @@ UPDATE products SET discount = 10 WHERE price > 500
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await products.updateMany({ price: { $gt: 500 } }, { $set: { discount: 10 } });
+```
+
 #### UPDATE todos los documentos
 
 ```sql
@@ -552,6 +669,12 @@ UPDATE users SET status = 'archived'
   "filter": {},
   "update": { "$set": { "status": "archived" } }
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.updateMany({}, { $set: { status: "archived" } });
 ```
 
 ---
@@ -578,6 +701,12 @@ DELETE FROM users WHERE id = 1
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.deleteOne({ id: { $eq: 1 } });
+```
+
 #### DELETE múltiples documentos
 
 ```sql
@@ -592,6 +721,12 @@ DELETE FROM users WHERE age < 18
   "operation": "deleteMany",
   "filter": { "age": { "$lt": 18 } }
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.deleteMany({ age: { $lt: 18 } });
 ```
 
 #### DELETE con múltiples condiciones (AND)
@@ -623,6 +758,17 @@ DELETE FROM users WHERE status = 'inactive' AND created_at < '2023-01-01'
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.deleteMany({
+  $and: [
+    { status: { $eq: "inactive" } },
+    { created_at: { $lt: "2023-01-01" } },
+  ],
+});
+```
+
 #### DELETE con IN
 
 ```sql
@@ -639,6 +785,12 @@ DELETE FROM products WHERE id IN (1, 5, 10)
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await products.deleteMany({ id: { $in: [1, 5, 10] } });
+```
+
 #### ⚠️ DELETE todos los documentos
 
 ```sql
@@ -653,6 +805,12 @@ DELETE FROM users
   "operation": "deleteMany",
   "filter": {}
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.deleteMany({});
 ```
 
 ---
@@ -695,6 +853,33 @@ SELECT u.name, o.order_id FROM users u INNER JOIN orders o ON u.id = o.user_id
 }
 ```
 
+**Mongoose Query:**
+
+```typescript
+await users.aggregate([
+  {
+    $lookup: {
+      from: "orders",
+      localField: "id",
+      foreignField: "user_id",
+      as: "o",
+    },
+  },
+  {
+    $unwind: {
+      path: "$o",
+      preserveNullAndEmptyArrays: false,
+    },
+  },
+  {
+    $project: {
+      name: 1,
+      order_id: 1,
+    },
+  },
+]);
+```
+
 #### LEFT JOIN
 
 ```sql
@@ -729,6 +914,33 @@ SELECT u.name, o.order_id FROM users u LEFT JOIN orders o ON u.id = o.user_id
     }
   ]
 }
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.aggregate([
+  {
+    $lookup: {
+      from: "orders",
+      localField: "id",
+      foreignField: "user_id",
+      as: "o",
+    },
+  },
+  {
+    $unwind: {
+      path: "$o",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $project: {
+      name: 1,
+      order_id: 1,
+    },
+  },
+]);
 ```
 
 ---
