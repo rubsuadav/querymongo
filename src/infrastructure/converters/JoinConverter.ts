@@ -62,6 +62,7 @@ export const JoinConverter: IConverter = {
 
     return removeUndefinedFields({
       collection: mainTable,
+      queryType: "find",
       pipeline,
     });
   },
