@@ -16,7 +16,8 @@
     "start": "npm run build && node dist/cli/main.js",
     "dev": "tsx src/cli/main.ts",
     "test": "node --experimental-strip-types --experimental-test-coverage --test \"**/*.{spec,integration}.ts\"",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write .",
+    "run-examples": "tsx examples.ts"
   },
   "keywords": [
     "sql",
