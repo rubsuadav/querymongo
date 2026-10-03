@@ -15,7 +15,7 @@
     "build": "npm run clean && tsc",
     "start": "npm run build && node dist/cli/main.js",
     "dev": "tsx src/cli/main.ts",
-    "test": "node --experimental-strip-types --experimental-test-coverage --test \"**/*.{spec,integration}.ts\"",
+    "test": "c8 --reporter=text --reporter=lcov node --experimental-strip-types --test \"**/*.{spec,integration}.ts\"",
     "format": "npx prettier --write .",
     "run-examples": "tsx examples.ts"
   },
@@ -49,6 +49,7 @@
     "@semantic-release/npm": "^13.1.5",
     "@types/lodash": "^4.17.25",
     "@types/node": "^26.6.2",
+    "c8": "^12.0.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
