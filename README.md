@@ -1,5 +1,11 @@
 # QueryMongo 🚀
 
+[![npm version](https://img.shields.io/npm/v/querymongo.svg)](https://www.npmjs.com/package/querymongo)
+[![npm downloads](https://img.shields.io/npm/dm/querymongo.svg)](https://www.npmjs.com/package/querymongo)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![Last Commit](https://img.shields.io/github/last-commit/rubsuadav/querymongo.svg)](https://github.com/rubsuadav/querymongo/commits)
+[![Coverage Status](https://coveralls.io/repos/github/rubsuadav/querymongo/badge.svg?branch=main)](https://coveralls.io/github/rubsuadav/querymongo?branch=main)
+
 SQL to MongoDB Query Converter CLI - Convierte queries SQL a MongoDB format de forma simple y poderosa.
 
 ## 📋 Características
