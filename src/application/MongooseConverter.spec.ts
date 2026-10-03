@@ -181,6 +181,66 @@ describe("MongooseConverter", () => {
     });
   });
 
+  describe("SELECT operations (aggregate functions)", () => {
+    test("should convert aggregate SELECT queries to Mongoose aggregate", () => {
+      // "SELECT COUNT(*) AS count FROM users",
+      const mongoResult = {
+        collection: "users",
+        queryType: "aggregation",
+        pipeline: [
+          {
+            $group: {
+              _id: null,
+              count: { $sum: 1 },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              count: 1,
+            },
+          },
+        ],
+      };
+
+      const result = mongooseConverter.convert(mongoResult);
+
+      ok(result.startsWith("await users.aggregate("));
+      ok(result.includes('"$group"'));
+      ok(result.includes('"count"'));
+    });
+
+    test("should convert GROUP BY SELECT queries to Mongoose aggregate", () => {
+      // "SELECT category, SUM(price) AS total FROM products GROUP BY category",
+      const mongoResult = {
+        collection: "products",
+        queryType: "aggregation",
+        pipeline: [
+          {
+            $group: {
+              _id: "$category",
+              total: { $sum: "$price" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              category: "$_id",
+              total: 1,
+            },
+          },
+        ],
+      };
+
+      const result = mongooseConverter.convert(mongoResult);
+
+      ok(result.startsWith("await products.aggregate("));
+      ok(result.includes('"$group"'));
+      ok(result.includes('"$project"'));
+      ok(result.includes('"total"'));
+    });
+  });
+
   describe("INSERT operations", () => {
     test("should convert insertOne operation", () => {
       const mongoResult = {

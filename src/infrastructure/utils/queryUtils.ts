@@ -34,6 +34,151 @@ export const extractSelectColumns = (columns: any[]): string[] => {
   });
 };
 
+const getColumnName = (expression: any): string => {
+  const column = expression?.column || expression?.value || expression || "";
+  return normalizeQualifiedField(normalizeFieldName(String(column)));
+};
+
+const getColumnAlias = (column: any, fallback: string): string => {
+  const alias = column?.as;
+  if (typeof alias === "string") return normalizeFieldName(alias);
+  if (alias?.value !== undefined)
+    return normalizeFieldName(String(alias.value));
+  return fallback;
+};
+
+const getColumnExpression = (column: any): any => column?.expr || column;
+
+const isAggregationColumn = (column: any): boolean => {
+  return getColumnExpression(column)?.type === "aggr_func";
+};
+
+const getAggregationKey = (expression: any): string => {
+  return `${String(expression?.name || "").toUpperCase()}:${getColumnName(
+    expression?.args?.expr,
+  )}`;
+};
+
+const findAggregationAlias = (
+  expression: any,
+  columns: any[],
+): string | null => {
+  const matchingColumn = (columns || []).find((column: any) => {
+    const selectExpression = getColumnExpression(column);
+    return (
+      selectExpression?.type === "aggr_func" &&
+      getAggregationKey(selectExpression) === getAggregationKey(expression)
+    );
+  });
+
+  if (!matchingColumn) return null;
+
+  const functionName = String(expression.name || "").toLowerCase();
+  return getColumnAlias(matchingColumn, functionName);
+};
+
+const normalizeHavingCondition = (condition: any, columns: any[]): any => {
+  if (!condition) return condition;
+
+  const operator = condition.operator?.toUpperCase();
+  if (operator === "AND" || operator === "OR") {
+    return {
+      ...condition,
+      left: normalizeHavingCondition(condition.left, columns),
+      right: normalizeHavingCondition(condition.right, columns),
+    };
+  }
+
+  const left = condition.left;
+  if (left?.type !== "aggr_func") return condition;
+
+  const alias = findAggregationAlias(left, columns);
+  if (!alias) return condition;
+
+  return {
+    ...condition,
+    left: { type: "column_ref", column: alias },
+  };
+};
+
+export const hasAggregation = (columns: any[]): boolean => {
+  return columns?.some(isAggregationColumn) ?? false;
+};
+
+export const buildHavingFilter = (
+  condition: any,
+  columns: any[],
+): Record<string, any> => {
+  return buildFilter(normalizeHavingCondition(condition, columns));
+};
+
+export const buildGroupStage = (
+  columns: any[],
+  groupBy: any,
+): Record<string, any> | null => {
+  const groupColumns = Array.isArray(groupBy?.columns) ? groupBy.columns : [];
+  const groupId =
+    groupColumns.length === 0
+      ? null
+      : groupColumns.length === 1
+        ? `$${getColumnName(groupColumns[0])}`
+        : Object.fromEntries(
+            groupColumns.map((column: any) => {
+              const field = getColumnName(column);
+              return [field, `$${field}`];
+            }),
+          );
+
+  const group: Record<string, any> = { _id: groupId };
+
+  for (const column of columns || []) {
+    const expression = getColumnExpression(column);
+    if (expression?.type !== "aggr_func") continue;
+
+    const functionName = String(expression.name || "").toUpperCase();
+    const alias = getColumnAlias(column, functionName.toLowerCase());
+    const argument = expression.args?.expr;
+
+    if (functionName === "COUNT") {
+      group[alias] = { $sum: argument?.type === "star" ? 1 : 1 };
+      continue;
+    }
+
+    const operator = `$${functionName.toLowerCase()}`;
+    if (!["$min", "$max", "$sum", "$avg"].includes(operator)) continue;
+
+    group[alias] = {
+      [operator]: `$${getColumnName(argument)}`,
+    };
+  }
+
+  return Object.keys(group).length > 1 ? { $group: group } : null;
+};
+
+export const buildAggregationProjection = (
+  columns: any[],
+  groupBy: any,
+): Record<string, any> | null => {
+  const groupColumns = Array.isArray(groupBy?.columns) ? groupBy.columns : [];
+  if (groupColumns.length === 0) return null;
+
+  const projection: Record<string, any> = { _id: 0 };
+  groupColumns.forEach((column: any) => {
+    const field = getColumnName(column);
+    projection[field] = groupColumns.length === 1 ? "$_id" : `$_id.${field}`;
+  });
+
+  (columns || []).forEach((column: any) => {
+    if (isAggregationColumn(column)) {
+      const expression = getColumnExpression(column);
+      const functionName = String(expression.name || "").toLowerCase();
+      projection[getColumnAlias(column, functionName)] = 1;
+    }
+  });
+
+  return projection;
+};
+
 export const buildProjection = (
   fields: string[] | "*",
 ): Record<string, 1 | 0> => {

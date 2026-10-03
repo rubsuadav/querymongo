@@ -9,6 +9,10 @@ import {
   removeUndefinedFields,
   extractSelectColumns,
   buildSort,
+  buildGroupStage,
+  buildAggregationProjection,
+  hasAggregation,
+  buildHavingFilter,
 } from "../utils/queryUtils.ts";
 
 export const JoinConverter: IConverter = {
@@ -21,12 +25,13 @@ export const JoinConverter: IConverter = {
 
   convert: (query: any): Record<string, any> => {
     const { ast } = query;
-    const { from, columns, where, limit, orderby } = ast;
+    const { from, columns, where, limit, orderby, groupby, having } = ast;
 
     const mainTable = from[0].table;
     const pipeline: any[] = [];
 
     const columnNames = columns ? extractSelectColumns(columns) : ["*"];
+    const aggregation = hasAggregation(columns) || groupby?.columns?.length > 0;
     const limitValue = limit?.value?.[0]?.value || limit?.value || limit;
     const sortSpec = buildSort(orderby);
 
@@ -56,7 +61,18 @@ export const JoinConverter: IConverter = {
     });
 
     if (where) pipeline.push({ $match: buildFilter(where) });
-    pipeline.push({ $project: buildProjection(columnNames) });
+    const groupStage = aggregation ? buildGroupStage(columns, groupby) : null;
+    if (groupStage) pipeline.push(groupStage);
+
+    const aggregationProjection = aggregation
+      ? buildAggregationProjection(columns, groupby)
+      : null;
+    if (aggregationProjection) {
+      pipeline.push({ $project: aggregationProjection });
+    } else {
+      pipeline.push({ $project: buildProjection(columnNames) });
+    }
+    if (having) pipeline.push({ $match: buildHavingFilter(having, columns) });
     if (sortSpec) pipeline.push({ $sort: sortSpec });
     if (limitValue) pipeline.push({ $limit: limitValue });
 

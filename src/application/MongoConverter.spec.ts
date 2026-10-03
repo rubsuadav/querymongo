@@ -69,6 +69,109 @@ describe("MongoConverter", () => {
       const projectStage = result.pipeline.find((s: any) => s.$project);
       ok(projectStage?.$project?.id || projectStage?.$project?.name);
     });
+
+    test("should convert aggregate functions without GROUP BY", () => {
+      const result = mongoConverter.convert(
+        "SELECT SUM(runtime) AS totalRuntime, AVG(runtime) AS averageRuntime, COUNT(*) AS count FROM movies",
+      );
+
+      equal(result.queryType, "aggregation");
+      deepEqual(result.pipeline, [
+        { $match: {} },
+        {
+          $group: {
+            _id: null,
+            totalRuntime: { $sum: "$runtime" },
+            averageRuntime: { $avg: "$runtime" },
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+    });
+
+    test("should convert GROUP BY with aggregate functions", () => {
+      const result = mongoConverter.convert(
+        "SELECT country, COUNT(*) AS count FROM users GROUP BY country ORDER BY count DESC",
+      );
+
+      deepEqual(result.pipeline, [
+        { $match: {} },
+        { $group: { _id: "$country", count: { $sum: 1 } } },
+        { $project: { _id: 0, country: "$_id", count: 1 } },
+        { $sort: { count: -1 } },
+      ]);
+    });
+
+    test("should apply WHERE before GROUP BY", () => {
+      const result = mongoConverter.convert(
+        "SELECT category, MIN(price) AS minimum, MAX(price) AS maximum FROM products WHERE active = true GROUP BY category",
+      );
+
+      equal(Object.keys(result.pipeline[0])[0], "$match");
+      equal(Object.keys(result.pipeline[1])[0], "$group");
+      deepEqual(result.pipeline[1].$group, {
+        _id: "$category",
+        minimum: { $min: "$price" },
+        maximum: { $max: "$price" },
+      });
+    });
+
+    test("should apply HAVING after GROUP BY using an aggregate alias", () => {
+      const result = mongoConverter.convert(
+        "SELECT category, COUNT(*) AS total FROM products GROUP BY category HAVING total > 5 ORDER BY total DESC",
+      );
+
+      deepEqual(result.pipeline, [
+        { $match: {} },
+        { $group: { _id: "$category", total: { $sum: 1 } } },
+        { $project: { _id: 0, category: "$_id", total: 1 } },
+        { $match: { total: { $gt: 5 } } },
+        { $sort: { total: -1 } },
+      ]);
+    });
+
+    test("should resolve aggregate expressions in HAVING", () => {
+      const result = mongoConverter.convert(
+        "SELECT category, SUM(price) AS total FROM products GROUP BY category HAVING SUM(price) >= 100",
+      );
+
+      deepEqual(result.pipeline[3], {
+        $match: { total: { $gte: 100 } },
+      });
+    });
+
+    test("should apply GROUP BY after JOIN and WHERE", () => {
+      const result = mongoConverter.convert(
+        "SELECT u.country, COUNT(*) AS total FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE o.status = 'completed' GROUP BY u.country",
+      );
+
+      const stageNames = result.pipeline.map(
+        (stage: any) => Object.keys(stage)[0],
+      );
+      ok(stageNames.indexOf("$lookup") < stageNames.indexOf("$group"));
+      ok(stageNames.indexOf("$match") < stageNames.indexOf("$group"));
+      deepEqual(result.pipeline.find((stage: any) => stage.$group)?.$group, {
+        _id: "$country",
+        total: { $sum: 1 },
+      });
+    });
+
+    test("should apply HAVING after GROUP BY in JOIN queries", () => {
+      const result = mongoConverter.convert(
+        "SELECT u.country, COUNT(*) AS total FROM users u LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.country HAVING total >= 10",
+      );
+
+      const stageNames = result.pipeline.map(
+        (stage: any) => Object.keys(stage)[0],
+      );
+      const groupIndex = stageNames.indexOf("$group");
+      const havingIndex = stageNames.lastIndexOf("$match");
+
+      ok(groupIndex < havingIndex);
+      deepEqual(result.pipeline[havingIndex], {
+        $match: { total: { $gte: 10 } },
+      });
+    });
   });
 
   describe("INSERT queries", () => {

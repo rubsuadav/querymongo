@@ -10,6 +10,7 @@ SQL to MongoDB Query Converter CLI - Convierte queries SQL a MongoDB format de f
 ✅ **Convertir DELETE queries** - Para eliminación con condiciones complejas  
 ✅ **Convertir JOIN queries** - INNER JOIN y LEFT JOIN entre colecciones  
 ✅ **Soporte para ORDER BY y sorting** - Permite ordenar resultados según múltiples campos y direcciones, aplica tanto en queries SELECT como en JOIN  
+✅ **Soporte para agregaciones, GROUP BY y HAVING** - COUNT, SUM, AVG, MIN, MAX y filtros de grupos convertidos a `$group` y `$match`  
 ✅ **CLI interactiva** - Modo interactivo para pruebas rápidas  
 ✅ **API TypeScript** - Para uso como librería en tus proyectos
 
@@ -464,6 +465,413 @@ SELECT name, age FROM users WHERE age >= 18 LIMIT 10
 
 ```typescript
 await users.find({ age: { $gte: 18 } }, { name: 1, age: 1 }).limit(10);
+```
+
+---
+
+### AGGREGATIONS - Agregaciones y GROUP BY
+
+Las funciones SQL `COUNT`, `SUM`, `AVG`, `MIN` y `MAX` se convierten en acumuladores de MongoDB dentro de una etapa `$group`. Cuando no existe `GROUP BY`, MongoDB usa `_id: null` y devuelve un único documento con los totales.
+
+#### Agregaciones sin GROUP BY
+
+```sql
+SELECT SUM(runtime) AS totalRuntime,
+       AVG(runtime) AS averageRuntime,
+       MIN(runtime) AS minimumRuntime,
+       MAX(runtime) AS maximumRuntime,
+       COUNT(*) AS count
+FROM movies
+```
+
+**Salida del Conversor:**
+
+```json
+{
+  "collection": "movies",
+  "queryType": "aggregation",
+  "pipeline": [
+    {
+      "$match": {}
+    },
+    {
+      "$group": {
+        "_id": null,
+        "totalRuntime": { "$sum": "$runtime" },
+        "averageRuntime": { "$avg": "$runtime" },
+        "minimumRuntime": { "$min": "$runtime" },
+        "maximumRuntime": { "$max": "$runtime" },
+        "count": { "$sum": 1 }
+      }
+    }
+  ]
+}
+```
+
+**Mongoose Query:**
+
+```typescript
+await movies.aggregate([
+  {
+    $match: {},
+  },
+  {
+    $group: {
+      _id: null,
+      totalRuntime: { $sum: "$runtime" },
+      averageRuntime: { $avg: "$runtime" },
+      minimumRuntime: { $min: "$runtime" },
+      maximumRuntime: { $max: "$runtime" },
+      count: { $sum: 1 },
+    },
+  },
+]);
+```
+
+#### GROUP BY con COUNT
+
+```sql
+SELECT category, COUNT(*) AS count
+FROM products
+GROUP BY category
+```
+
+**Salida del Conversor:**
+
+```json
+{
+  "collection": "products",
+  "queryType": "aggregation",
+  "pipeline": [
+    { "$match": {} },
+    {
+      "$group": {
+        "_id": "$category",
+        "count": { "$sum": 1 }
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "category": "$_id",
+        "count": 1
+      }
+    }
+  ]
+}
+```
+
+**Mongoose Query:**
+
+```typescript
+await products.aggregate([
+  { $match: {} },
+  {
+    $group: {
+      _id: "$category",
+      count: { $sum: 1 },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      category: "$_id",
+      count: 1,
+    },
+  },
+]);
+```
+
+#### GROUP BY con WHERE y ORDER BY
+
+```sql
+SELECT category,
+       SUM(price) AS total,
+       AVG(price) AS average
+FROM products
+WHERE active = true
+GROUP BY category
+ORDER BY total DESC
+```
+
+**Salida del Conversor:**
+
+```json
+{
+  "collection": "products",
+  "queryType": "aggregation",
+  "pipeline": [
+    { "$match": { "active": { "$eq": true } } },
+    {
+      "$group": {
+        "_id": "$category",
+        "total": { "$sum": "$price" },
+        "average": { "$avg": "$price" }
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "category": "$_id",
+        "total": 1,
+        "average": 1
+      }
+    },
+    { "$sort": { "total": -1 } }
+  ]
+}
+```
+
+**Mongoose Query:**
+
+```typescript
+await products.aggregate([
+  { $match: { active: { $eq: true } } },
+  {
+    $group: {
+      _id: "$category",
+      total: { $sum: "$price" },
+      average: { $avg: "$price" },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      category: "$_id",
+      total: 1,
+      average: 1,
+    },
+  },
+  { $sort: { total: -1 } },
+]);
+```
+
+#### GROUP BY con HAVING por alias
+
+```sql
+SELECT category, COUNT(*) AS total
+FROM products
+GROUP BY category
+HAVING total > 5
+ORDER BY total DESC
+```
+
+`WHERE` filtra documentos antes de agrupar. `HAVING` filtra los grupos después de calcular sus agregaciones.
+
+**Salida del Conversor:**
+
+```json
+{
+  "collection": "products",
+  "queryType": "aggregation",
+  "pipeline": [
+    { "$match": {} },
+    {
+      "$group": {
+        "_id": "$category",
+        "total": { "$sum": 1 }
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "category": "$_id",
+        "total": 1
+      }
+    },
+    {
+      "$match": {
+        "total": { "$gt": 5 }
+      }
+    },
+    { "$sort": { "total": -1 } }
+  ]
+}
+```
+
+**Mongoose Query:**
+
+```typescript
+await products.aggregate([
+  { $match: {} },
+  {
+    $group: {
+      _id: "$category",
+      total: { $sum: 1 },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      category: "$_id",
+      total: 1,
+    },
+  },
+  { $match: { total: { $gt: 5 } } },
+  { $sort: { total: -1 } },
+]);
+```
+
+#### HAVING con expresión agregada
+
+```sql
+SELECT category, SUM(price) AS total
+FROM products
+GROUP BY category
+HAVING SUM(price) >= 100
+```
+
+La expresión `SUM(price)` se resuelve mediante el alias `total` generado en el `$group`:
+
+```json
+{
+  "$match": {
+    "total": {
+      "$gte": 100
+    }
+  }
+}
+```
+
+#### JOIN con GROUP BY y HAVING
+
+```sql
+SELECT u.country, COUNT(*) AS total
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.country
+HAVING total >= 10
+ORDER BY total DESC
+```
+
+El pipeline mantiene el orden relacional correcto:
+
+```text
+$lookup -> $unwind -> $group -> $project -> $match (HAVING) -> $sort
+```
+
+**Salida del Conversor:**
+
+```json
+{
+  "collection": "users",
+  "queryType": "find",
+  "pipeline": [
+    {
+      "$lookup": {
+        "from": "orders",
+        "localField": "id",
+        "foreignField": "user_id",
+        "as": "o"
+      }
+    },
+    {
+      "$unwind": {
+        "path": "$o",
+        "preserveNullAndEmptyArrays": true
+      }
+    },
+    {
+      "$group": {
+        "_id": "$country",
+        "total": { "$sum": 1 }
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "country": "$_id",
+        "total": 1
+      }
+    },
+    { "$match": { "total": { "$gte": 10 } } },
+    { "$sort": { "total": -1 } }
+  ]
+}
+```
+
+#### JOIN con GROUP BY
+
+```sql
+SELECT u.country, COUNT(*) AS total
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.country
+ORDER BY total DESC
+```
+
+**Salida del Conversor:**
+
+```json
+{
+  "collection": "users",
+  "queryType": "find",
+  "pipeline": [
+    {
+      "$lookup": {
+        "from": "orders",
+        "localField": "id",
+        "foreignField": "user_id",
+        "as": "o"
+      }
+    },
+    {
+      "$unwind": {
+        "path": "$o",
+        "preserveNullAndEmptyArrays": true
+      }
+    },
+    {
+      "$group": {
+        "_id": "$country",
+        "total": { "$sum": 1 }
+      }
+    },
+    {
+      "$project": {
+        "_id": 0,
+        "country": "$_id",
+        "total": 1
+      }
+    },
+    { "$sort": { "total": -1 } }
+  ]
+}
+```
+
+**Mongoose Query:**
+
+```typescript
+await users.aggregate([
+  {
+    $lookup: {
+      from: "orders",
+      localField: "id",
+      foreignField: "user_id",
+      as: "o",
+    },
+  },
+  {
+    $unwind: {
+      path: "$o",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $group: {
+      _id: "$country",
+      total: { $sum: 1 },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      country: "$_id",
+      total: 1,
+    },
+  },
+  { $sort: { total: -1 } },
+]);
 ```
 
 ---
@@ -956,23 +1364,31 @@ Cobertura: **100%** en líneas y funciones.
 
 ## 🔧 Operadores Soportados
 
-| SQL         | MongoDB         | Descripción                |
-| ----------- | --------------- | -------------------------- |
-| `=`         | `$eq`           | Igualdad                   |
-| `!=` o `<>` | `$ne`           | No igual                   |
-| `<`         | `$lt`           | Menor que                  |
-| `>`         | `$gt`           | Mayor que                  |
-| `<=`        | `$lte`          | Menor o igual              |
-| `>=`        | `$gte`          | Mayor o igual              |
-| `WHERE`     | `$match`        | Condición de filtrado      |
-| `LIKE`      | `$regex`        | Búsqueda por patrón        |
-| `IN`        | `$in`           | Dentro de lista            |
-| `NOT IN`    | `$nin`          | Fuera de lista             |
-| `AND`       | `$and`          | Operador lógico Y          |
-| `OR`        | `$or`           | Operador lógico O          |
-| `JOIN`      | `$lookup`       | Unión entre colecciones    |
-| `ORDER BY`  | `$sort`         | Ordenamiento de resultados |
-| `BETWEEN`   | `$gte` y `$lte` | Rango de valores           |
+| SQL         | MongoDB         | Descripción                            |
+| ----------- | --------------- | -------------------------------------- |
+| `=`         | `$eq`           | Igualdad                               |
+| `!=` o `<>` | `$ne`           | No igual                               |
+| `<`         | `$lt`           | Menor que                              |
+| `>`         | `$gt`           | Mayor que                              |
+| `<=`        | `$lte`          | Menor o igual                          |
+| `>=`        | `$gte`          | Mayor o igual                          |
+| `WHERE`     | `$match`        | Condición de filtrado                  |
+| `LIKE`      | `$regex`        | Búsqueda por patrón                    |
+| `IN`        | `$in`           | Dentro de lista                        |
+| `NOT IN`    | `$nin`          | Fuera de lista                         |
+| `AND`       | `$and`          | Operador lógico Y                      |
+| `OR`        | `$or`           | Operador lógico O                      |
+| `JOIN`      | `$lookup`       | Unión entre colecciones                |
+| `ORDER BY`  | `$sort`         | Ordenamiento de resultados             |
+| `BETWEEN`   | `$gte` y `$lte` | Rango de valores                       |
+| `LIMIT`     | `$limit`        | Límite de resultados                   |
+| `COUNT`     | `$sum: 1`       | Conteo de documentos                   |
+| `SUM`       | `$sum`          | Suma de valores                        |
+| `AVG`       | `$avg`          | Promedio de valores                    |
+| `MIN`       | `$min`          | Valor mínimo                           |
+| `MAX`       | `$max`          | Valor máximo                           |
+| `GROUP BY`  | `$group`        | Agrupamiento de resultados             |
+| `HAVING`    | `$match`        | Filtrado de grupos después de `$group` |
 
 ## 📦 Dependencias
 
@@ -984,7 +1400,6 @@ Cobertura: **100%** en líneas y funciones.
 
 ## 🎯 Próximas Mejoras
 
-- [ ] Soporte para GROUP BY y agregaciones + HAVING
 - [ ] OFFSET clause (pagination)
 - [ ] Subqueries en WHERE
 

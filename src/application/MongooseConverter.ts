@@ -20,10 +20,11 @@ class MongooseConverter {
     const formattedUpdate = JSON.stringify(update, null, 2);
 
     // SELECT OPERATIONS
-    if (queryType === "find") {
+    if (queryType === "aggregation" || queryType === "find") {
       const hasLookup: boolean = pipeline.some((stage: any) => stage.$lookup);
+      const hasGroup: boolean = pipeline.some((stage: any) => stage.$group);
 
-      if (hasLookup) {
+      if (queryType === "aggregation" || hasLookup || hasGroup) {
         const formattedPipeline = JSON.stringify(pipeline, null, 2);
         return `await ${collection}.aggregate(${formattedPipeline})`;
       }

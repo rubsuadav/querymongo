@@ -56,6 +56,39 @@ const examples: Example[] = [
     sql: "SELECT name, age FROM users WHERE age >= 18 LIMIT 10",
     description: "Proyección, filtro y límite combinados",
   },
+
+  // ================== AGGREGATION QUERIES ==================
+  {
+    title: "📈 Agregaciones sin GROUP BY",
+    sql: "SELECT SUM(price) AS total, AVG(price) AS average, MIN(price) AS minimum, MAX(price) AS maximum, COUNT(*) AS count FROM products",
+    description: "Calcula métricas sobre todos los documentos de una colección",
+  },
+  {
+    title: "📈 COUNT sin GROUP BY",
+    sql: "SELECT COUNT(*) AS count FROM users",
+    description: "Cuenta todos los documentos de una colección",
+  },
+  {
+    title: "📊 GROUP BY con COUNT",
+    sql: "SELECT category, COUNT(*) AS count FROM products GROUP BY category",
+    description: "Agrupa productos por categoría y cuenta sus documentos",
+  },
+  {
+    title: "📊 GROUP BY con WHERE y ORDER BY",
+    sql: "SELECT category, SUM(price) AS total, AVG(price) AS average FROM products WHERE active = true GROUP BY category ORDER BY total DESC",
+    description: "Filtra antes de agrupar y ordena por una métrica agregada",
+  },
+  {
+    title: "📊 GROUP BY con HAVING por alias",
+    sql: "SELECT category, COUNT(*) AS total FROM products GROUP BY category HAVING total > 5 ORDER BY total DESC",
+    description: "Filtra grupos después de calcular sus agregaciones",
+  },
+  {
+    title: "📊 GROUP BY con HAVING y expresión agregada",
+    sql: "SELECT category, SUM(price) AS total FROM products GROUP BY category HAVING SUM(price) >= 100",
+    description:
+      "Resuelve la función agregada de HAVING usando su alias del SELECT",
+  },
   {
     title: "🔗 SELECT con LIKE",
     sql: "SELECT * FROM users WHERE email LIKE '%@gmail.com'",
@@ -170,6 +203,16 @@ const examples: Example[] = [
     title: "🔗 Múltiples JOINs",
     sql: "SELECT u.name, o.order_id, p.product_name FROM users u INNER JOIN orders o ON u.id = o.user_id INNER JOIN products p ON o.product_id = p.id",
     description: "Múltiples joins encadenados",
+  },
+  {
+    title: "🔗📊 JOIN con GROUP BY",
+    sql: "SELECT u.country, COUNT(*) AS total FROM users u LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.country ORDER BY total DESC",
+    description: "Agrupa los resultados de un JOIN y los ordena por el total",
+  },
+  {
+    title: "🔗📊 JOIN con GROUP BY y HAVING",
+    sql: "SELECT u.country, COUNT(*) AS total FROM users u LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.country HAVING total >= 10 ORDER BY total DESC",
+    description: "Filtra los grupos resultantes de un JOIN antes de ordenarlos",
   },
 
   // ================== ORDER BY QUERIES ==================
